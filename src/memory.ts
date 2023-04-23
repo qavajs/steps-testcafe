@@ -1,6 +1,7 @@
 import memory from '@qavajs/memory';
 import { When } from '@cucumber/cucumber';
 import { getElement, getValue } from './transformers';
+import {ClientFunction} from 'testcafe';
 
 /**
  * Save text of element to memory
@@ -10,7 +11,7 @@ import { getElement, getValue } from './transformers';
  */
 When('I save text of {string} as {string}', async function (alias, key) {
     const element = await getElement(alias);
-    const value = await element.innerText();
+    const value = await element.with({ boundTestRun: t }).innerText;
     memory.setValue(key, value);
 });
 
@@ -25,7 +26,8 @@ When('I save text of {string} as {string}', async function (alias, key) {
 When('I save {string} property of {string} as {string}', async function (property, alias, key) {
     const element = await getElement(alias);
     const propertyName = await getValue(property);
-    const value = await element.evaluate((node: any, propertyName: string) => node[propertyName], propertyName);
+    // @ts-ignore
+    const value = await element.with({ boundTestRun: t })[propertyName];
     memory.setValue(key, value);
 });
 
@@ -40,7 +42,7 @@ When('I save {string} property of {string} as {string}', async function (propert
 When('I save {string} attribute of {string} as {string}', async function (attribute, alias, key) {
     const element = await getElement(alias);
     const attributeName = await getValue(attribute);
-    const value = await element.getAttribute(attributeName);
+    const value = await element.with({ boundTestRun: t }).getAttribute(attributeName);
     memory.setValue(key, value);
 });
 
@@ -52,7 +54,7 @@ When('I save {string} attribute of {string} as {string}', async function (attrib
  */
 When('I save number of elements in {string} collection as {string}', async function (alias, key) {
     const collection = await getElement(alias);
-    const value = await collection.count();
+    const value = await collection.with({ boundTestRun: t }).count;
     memory.setValue(key, value);
 });
 
@@ -66,9 +68,11 @@ When(
     'I save text of every element of {string} collection as {string}',
     async function (alias: string, key: string) {
         const collection = await getElement(alias);
-        const values = await collection.evaluateAll(
-            (collection: Array<any>) => collection.map(e => e.innerText)
-        );
+        const count = await collection.with({ boundTestRun: t }).count;
+        const values = [];
+        for (let i = 0; i < count; i++) {
+            values.push(await collection.nth(i).with({ boundTestRun: t }).innerText);
+        }
         memory.setValue(key, values);
     }
 );
@@ -83,10 +87,11 @@ When(
     'I save {string} attribute of every element of {string} collection as {string}',
     async function (attribute: string, alias: string, key: string) {
         const collection = await getElement(alias);
-        const values = await collection.evaluateAll(
-            (collection: Array<any>, attr: string) => collection.map(e => e.attributes[attr].value),
-            attribute
-        );
+        const count = await collection.with({ boundTestRun: t }).count;
+        const values = [];
+        for (let i = 0; i < count; i++) {
+            values.push(await collection.nth(i).with({ boundTestRun: t }).getAttribute(attribute));
+        }
         memory.setValue(key, values);
     }
 );
@@ -100,11 +105,15 @@ When(
 When(
     'I save {string} property of every element of {string} collection as {string}',
     async function (property: string, alias: string, key: string) {
+        const propertyName = await getValue(property);
         const collection = await getElement(alias);
-        const values = await collection.evaluateAll(
-            (collection: Array<any>, prop: string) => collection.map(e => e[prop]),
-            property
-        );
+        const count = await collection.with({ boundTestRun: t }).count;
+        const values = [];
+        for (let i = 0; i < count; i++) {
+            const element = collection.nth(i).with({ boundTestRun: t });
+            // @ts-ignore
+            values.push(await element[propertyName]);
+        }
         memory.setValue(key, values);
     }
 );
@@ -115,7 +124,9 @@ When(
  * @example I save current url as 'currentUrl'
  */
 When('I save current url as {string}', async function (key: string) {
-    memory.setValue(key, page.url());
+    const url = await ClientFunction(() => window.location.href )
+        .with({ boundTestRun: t })();
+    memory.setValue(key, url);
 });
 
 /**
@@ -124,7 +135,8 @@ When('I save current url as {string}', async function (key: string) {
  * @example I save page title as 'currentTitle'
  */
 When('I save page title as {string}', async function (key: string) {
-    const title = await page.title();
+    const title = await ClientFunction(() => window.document.title )
+        .with({ boundTestRun: t })();
     memory.setValue(key, title);
 });
 
@@ -134,7 +146,7 @@ When('I save page title as {string}', async function (key: string) {
  * @example I save screenshot as 'screenshot'
  */
 When('I save screenshot as {string}', async function(key: string) {
-    const screenshot = await page.screenshot();
+    const screenshot = await t.takeScreenshot();
     memory.setValue(key, screenshot);
 });
 
@@ -149,9 +161,9 @@ When('I save screenshot as {string}', async function(key: string) {
 When('I save {string} css property of {string} as {string}', async function (property, alias, key) {
     const element = await getElement(alias);
     const propertyName = await getValue(property);
-    const value = await element.evaluate(
-        (node: Element, propertyName: string) => getComputedStyle(node).getPropertyValue(propertyName),
-        propertyName
-    );
+    const value = await ClientFunction(() => {
+        // @ts-ignore
+        return getComputedStyle(element()).getPropertyValue(propertyName)
+    }, { dependencies: { element, propertyName }}).with({ boundTestRun: t })();
     memory.setValue(key, value);
 });

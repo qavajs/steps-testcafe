@@ -36,8 +36,8 @@ Feature: memory
     Then I expect '$memory' memory value to be equal '$array("firstValue", "secondValue", "thirdValue")'
 
   Scenario: collection property of elements
-    Then I save 'nodeName' property of every element of 'Simple Text List Items' collection as 'memory'
-    Then I expect '$memory' memory value to be equal '$array("LI", "LI", "LI")'
+    Then I save 'tagName' property of every element of 'Simple Text List Items' collection as 'memory'
+    Then I expect '$memory' memory value to be equal '$array("li", "li", "li")'
 
   Scenario: element css property
     When I save 'background-color' css property of 'Simple Text Input' as 'color'

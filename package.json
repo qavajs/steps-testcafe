@@ -1,6 +1,6 @@
 {
   "name": "@qavajs/steps-playwright",
-  "version": "0.0.19",
+  "version": "0.0.1",
   "description": "steps to interact with playwright",
   "main": "./index.js",
   "scripts": {
@@ -27,7 +27,7 @@
     "@qavajs/cli": "^0.0.21",
     "@qavajs/console-formatter": "^0.2.1",
     "@qavajs/memory": "^1.2.1",
-    "@qavajs/po-playwright": "^0.0.8",
+    "@qavajs/po-testcafe": "/Users/Oleksandr_Halichenko/WebstormProjects/qavajs-po-testcafe",
     "@qavajs/webstorm-adapter": "^8.0.0",
     "@qavajs/xunit-formatter": "^0.0.3",
     "@types/chai": "^4.3.4",
@@ -42,6 +42,7 @@
   "dependencies": {
     "@playwright/test": "^1.32.2",
     "@qavajs/validation": "^0.0.4",
-    "playwright": "^1.32.2"
+    "playwright": "^1.32.2",
+    "testcafe": "^2.5.1-rc.1"
   }
 }

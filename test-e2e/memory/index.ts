@@ -1,6 +1,7 @@
 import { resolve } from 'path';
 import { Response } from '@playwright/test';
 const file = (path: string) => `file://${path}`
+
 export default class Memory {
     valuesPage = file(resolve('./test-e2e/apps/values.html'));
     actionsPage = file(resolve('./test-e2e/apps/actions.html'));
@@ -18,10 +19,10 @@ export default class Memory {
     getActionInnerText = () => document.querySelector("#action").innerText;
 
     // @ts-ignore
-    clickJS = target => target.click();
+    clickJS = () => target().click();
 
     // @ts-ignore
-    getInnerText = target => target.innerText;
+    getInnerText = () => target().innerText;
 
     userFromMemory = 'Mock 3';
 

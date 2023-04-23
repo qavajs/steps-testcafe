@@ -1,6 +1,7 @@
 import { Then } from '@cucumber/cucumber';
 import { getValue, getElement, getConditionWait } from './transformers';
 import { getValidation } from '@qavajs/validation';
+import { ClientFunction } from 'testcafe';
 
 /**
  * Verify element condition
@@ -30,7 +31,7 @@ Then(
         const expectedValue = await getValue(value);
         const element = await getElement(alias);
         const validation = getValidation(validationType);
-        const elementText: string = await element.innerText();
+        const elementText: string = await element.with({ boundTestRun: t }).innerText;
         this.log(`AR: ${elementText}`);
         this.log(`ER: ${expectedValue}`);
         validation(elementText, expectedValue);
@@ -53,7 +54,8 @@ Then(
         const expectedValue = await getValue(value);
         const element = await getElement(alias);
         const validation = getValidation(validationType);
-        const actualValue = await element.evaluate((node: any, propertyName: string) => node[propertyName], propertyName);
+        // @ts-ignore
+        const actualValue: string = await element.with({ boundTestRun: t })[propertyName];
         this.log(`AR: ${actualValue}`);
         this.log(`ER: ${expectedValue}`);
         validation(actualValue, expectedValue);
@@ -75,7 +77,7 @@ Then(
         const expectedValue = await getValue(value);
         const element = await getElement(alias);
         const validation = getValidation(validationType);
-        const actualValue = await element.getAttribute(attributeName);
+        const actualValue: string | null = await element.with({ boundTestRun: t }).getAttribute(attributeName);
         this.log(`AR: ${actualValue}`);
         this.log(`ER: ${expectedValue}`);
         validation(actualValue, expectedValue);
@@ -94,13 +96,14 @@ Then(
     async function (validationType: string, expected: string) {
         const validation = getValidation(validationType);
         const expectedUrl = await getValue(expected);
-        const actualUrl = page.url();
+        const actualUrl = await ClientFunction(() => window.location.href )
+            .with({ boundTestRun: t })();
         this.log(`AR: ${actualUrl}`);
         this.log(`ER: ${expectedUrl}`);
         validation(actualUrl, expectedUrl);
     }
 );
-
+//
 /**
  * Verify that number of element in collection satisfies condition
  * @param {string} alias - collection to verify
@@ -116,7 +119,7 @@ Then(
         const expectedValue = await getValue(value);
         const collection = await getElement(alias);
         const validation = getValidation(validationType);
-        const actualCount = await collection.count();
+        const actualCount = await collection.with({ boundTestRun: t }).count;
         this.log(`AR: ${actualCount}`);
         this.log(`ER: ${expectedValue}`);
         validation(actualCount, expectedValue);
@@ -134,7 +137,8 @@ Then(
     async function (validationType: string, expected: string) {
         const validation = getValidation(validationType);
         const expectedTitle = await getValue(expected);
-        const actualTitle = await page.title();
+        const actualTitle = await ClientFunction(() => window.document.title )
+            .with({ boundTestRun: t })();
         this.log(`AR: ${actualTitle}`);
         this.log(`ER: ${expectedTitle}`);
         validation(actualTitle, expectedTitle);
@@ -155,9 +159,10 @@ Then(
         const expectedValue = await getValue(value);
         const collection = await getElement(alias);
         const validation = getValidation(validationType);
-        for (let i = 0; i < await collection.count(); i++) {
-            const elementText: string = await collection.nth(i).innerText();
-            validation(elementText, expectedValue);
+        const count = await collection.with({ boundTestRun: t }).count;
+        for (let i = 0; i < count; i++) {
+            const text = await collection.nth(i).with({ boundTestRun: t }).innerText;
+            validation(text, expectedValue);
         }
     }
 );
@@ -171,13 +176,15 @@ Then(
  */
 Then(
     'I expect {string} attribute of every element in {string} collection {playwrightValidation} {string}',
-    async function (attribute: string, alias: string, validationType: string, value: string) {
+    async function (attributeKey: string, alias: string, validationType: string, value: string) {
+        const attribute = await getValue(attributeKey);
         const expectedValue = await getValue(value);
         const collection = await getElement(alias);
         const validation = getValidation(validationType);
-        for (let i = 0; i < await collection.count(); i++) {
-            const attributeValue: string | null = await collection.nth(i).getAttribute(attribute);
-            validation(attributeValue, expectedValue);
+        const count = await collection.with({ boundTestRun: t }).count;
+        for (let i = 0; i < count; i++) {
+            const attr = await collection.nth(i).with({ boundTestRun: t }).getAttribute(attribute);
+            validation(attr, expectedValue);
         }
     }
 );
@@ -191,15 +198,17 @@ Then(
  */
 Then(
     'I expect {string} property of every element in {string} collection {playwrightValidation} {string}',
-    async function (property: string, alias: string, validationType: string, value: string) {
+    async function (propertyKey: string, alias: string, validationType: string, value: string) {
+        const property = await getValue(propertyKey);
         const expectedValue = await getValue(value);
         const collection = await getElement(alias);
         const validation = getValidation(validationType);
-        for (let i = 0; i < await collection.count(); i++) {
-            const propertyValue: string | null = await collection.nth(i).evaluate(
-                (node: any, property: string) => node[property], property
-            );
-            validation(propertyValue, expectedValue);
+
+        const count = await collection.with({ boundTestRun: t }).count;
+        for (let i = 0; i < count; i++) {
+            // @ts-ignore
+            const prop = await collection.nth(i).with({ boundTestRun: t })[property];
+            validation(prop, expectedValue);
         }
     }
 );
@@ -220,30 +229,30 @@ Then(
         const expectedValue = await getValue(value);
         const element = await getElement(alias);
         const validation = getValidation(validationType);
-        const actualValue = await element.evaluate(
-            (node: Element, propertyName: string) => getComputedStyle(node).getPropertyValue(propertyName),
-            propertyName
-        );
+        const actualValue = await ClientFunction(() => {
+            // @ts-ignore
+            return getComputedStyle(element()).getPropertyValue(propertyName)
+        }, { dependencies: { element, propertyName }}).with({ boundTestRun: t })();
         this.log(`AR: ${actualValue}`);
         this.log(`ER: ${expectedValue}`);
         validation(actualValue, expectedValue);
     }
 );
 
-/**
- * Verify that text of an alert meets expectation
- * @param {string} validationType - validation
- * @param {string} value - expected text value
- * @example I expect text of alert does not contain 'coffee'
- */
-Then('I expect text of alert {playwrightValidation} {string}', async function (validationType: string, expectedValue: string) {
-        const alertText = await new Promise<string>(resolve => page.once('dialog', async (dialog) => {
-            resolve(dialog.message());
-        }));
-        const expected = await getValue(expectedValue);
-        const validation = getValidation(validationType);
-        this.log(`AR: ${alertText}`);
-        this.log(`ER: ${expected}`);
-        validation(alertText, expectedValue);
-    }
-);
+// /**
+//  * Verify that text of an alert meets expectation
+//  * @param {string} validationType - validation
+//  * @param {string} value - expected text value
+//  * @example I expect text of alert does not contain 'coffee'
+//  */
+// Then('I expect text of alert {playwrightValidation} {string}', async function (validationType: string, expectedValue: string) {
+//         const alertText = await new Promise<string>(resolve => page.once('dialog', async (dialog) => {
+//             resolve(dialog.message());
+//         }));
+//         const expected = await getValue(expectedValue);
+//         const validation = getValidation(validationType);
+//         this.log(`AR: ${alertText}`);
+//         this.log(`ER: ${expected}`);
+//         validation(alertText, expectedValue);
+//     }
+// );

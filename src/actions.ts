@@ -1,8 +1,7 @@
 import { When } from '@cucumber/cucumber';
 import { getValue, getElement } from './transformers';
-import { po } from '@qavajs/po-playwright';
-import { expect } from '@playwright/test';
-import { parseCoords } from './utils/utils';
+import { ClientFunction, Selector } from 'testcafe';
+import {parseCoords} from './utils/utils';
 
 /**
  * Opens provided url
@@ -11,7 +10,7 @@ import { parseCoords } from './utils/utils';
  */
 When('I open {string} url', async function (url: string) {
     const urlValue = await getValue(url);
-    await page.goto(urlValue);
+    await t.navigateTo(urlValue);
 });
 
 /**
@@ -23,7 +22,7 @@ When('I open {string} url', async function (url: string) {
 When('I type {string} to {string}', async function (value: string, alias: string) {
     const element = await getElement(alias);
     const typeValue = await getValue(value);
-    await element.type(typeValue);
+    await t.typeText(element, typeValue);
 });
 
 /**
@@ -33,7 +32,7 @@ When('I type {string} to {string}', async function (value: string, alias: string
  */
 When('I click {string}', async function (alias: string) {
     const element = await getElement(alias);
-    await element.click();
+    await t.click(element);
 });
 
 /**
@@ -43,7 +42,8 @@ When('I click {string}', async function (alias: string) {
  */
 When('I force click {string}', async function (alias: string) {
     const element = await getElement(alias);
-    await element.evaluate((e: HTMLElement) => e.click());
+    // @ts-ignore
+    await t.eval(() => element().click(), { dependencies: { element } });
 });
 
 /**
@@ -53,7 +53,7 @@ When('I force click {string}', async function (alias: string) {
  */
 When('I right click {string}', async function (alias: string) {
     const element = await getElement(alias);
-    await element.click({button: 'right'});
+    await t.rightClick(element);
 });
 
 /**
@@ -63,7 +63,7 @@ When('I right click {string}', async function (alias: string) {
  */
 When('I double click {string}', async function (alias: string) {
     const element = await getElement(alias);
-    await element.dblclick();
+    await t.doubleClick(element);
 });
 
 /**
@@ -73,7 +73,7 @@ When('I double click {string}', async function (alias: string) {
  */
 When('I clear {string}', async function (alias: string) {
     const element = await getElement(alias);
-    await element.fill('');
+    await t.selectText(element).pressKey('delete');
 });
 
 /**
@@ -81,8 +81,7 @@ When('I clear {string}', async function (alias: string) {
  * @example I switch to parent frame
  */
 When('I switch to parent frame', async function () {
-    // @ts-ignore
-    po.driver = page;
+    await t.switchToMainWindow();
 });
 
 /**
@@ -91,27 +90,19 @@ When('I switch to parent frame', async function () {
  * @example I switch to 2 frame
  */
 When('I switch to {int} frame', async function (index: number) {
-    await expect.poll(
-        () => page.frames()?.length,
-        { timeout: config.browser.timeout.page }
-    ).toBeGreaterThan(index);
-    // @ts-ignore
-    po.driver = page.frames()[index];
+    await t.switchToIframe(Selector('iframe').nth(index - 1));
 });
 
 /**
- * Switch to window by index
+ * Switch to frame by index
  * @param {number} index - index to switch
- * @example I switch to 2 window
+ * @example I switch to 2 frame
  */
-When('I switch to {int} window', async function (index: number) {
-    await expect.poll(
-        () => context.pages()?.length,
-        { timeout: config.browser.timeout.page }
-    ).toBeGreaterThan(index - 1);
-    global.page = context.pages()[index - 1];
-    //@ts-ignore
-    po.driver = page;
+When('I switch to {string} window', async function (hrefOrTitleKey: string) {
+    const hrefOrTitle = await getValue(hrefOrTitleKey);
+    await t.switchToWindow((win: WindowFilterData) =>
+        win.title.includes(hrefOrTitle) || win.url.href.includes(hrefOrTitle)
+    );
 });
 
 /**
@@ -119,7 +110,9 @@ When('I switch to {int} window', async function (index: number) {
  * @example I refresh page
  */
 When('I refresh page', async function () {
-    await page.reload();
+    await ClientFunction(() => {
+        document.location.reload();
+    }).with({ boundTestRun: t })();
 });
 
 /**
@@ -129,7 +122,8 @@ When('I refresh page', async function () {
  * @example I press 'Control+C' keys
  */
 When('I press {string} key(s)', async function (key: string) {
-    await page.press('body', key);
+    const resolvedKey = await getValue(key);
+    await t.pressKey(resolvedKey.toLowerCase());
 });
 
 /**
@@ -140,8 +134,9 @@ When('I press {string} key(s)', async function (key: string) {
  * @example I press 'Control+V' keys 5 times
  */
 When('I press {string} key(s) {int} time(s)', async function (key: string, num: number) {
+    const resolvedKey = await getValue(key)
     for (let i: number = 0; i < num; i++) {
-        await page.keyboard.press(key);
+        await t.pressKey(resolvedKey.toLowerCase());
     }
 });
 
@@ -152,7 +147,7 @@ When('I press {string} key(s) {int} time(s)', async function (key: string, num: 
  */
 When('I hover over {string}', async function (alias: string) {
     const element = await getElement(alias);
-    await element.hover();
+    await t.hover(element);
 });
 
 /**
@@ -165,7 +160,7 @@ When('I hover over {string}', async function (alias: string) {
 When('I select {string} option from {string} dropdown', async function (option: string, alias: string) {
     const optionValue = await getValue(option);
     const select = await getElement(alias);
-    await select.selectOption({ label: optionValue });
+    await t.click(select.find('option').withText(optionValue));
 });
 
 /**
@@ -176,7 +171,7 @@ When('I select {string} option from {string} dropdown', async function (option: 
  */
 When('I select {int}(st|nd|rd|th) option from {string} dropdown', async function (optionIndex: number, alias: string) {
     const select = await getElement(alias);
-    await select.selectOption({ index: optionIndex - 1 });
+    await t.click(select.find('option').nth(optionIndex - 1));
 });
 
 /**
@@ -191,7 +186,7 @@ When(
     async function (value: string, alias: string) {
         const resolvedValue = await getValue(value);
         const collection = await getElement(alias);
-        await collection.getByText(resolvedValue).click();
+        await t.click(collection.withText(resolvedValue));
     }
 );
 
@@ -203,9 +198,7 @@ When(
  */
 When('I scroll by {string}', async function (offset: string) {
     const [x, y] = parseCoords(await getValue(offset));
-    await page.evaluate(function (coords) {
-        window.scrollBy(...coords as [number, number]);
-    }, [x, y]);
+    await t.scrollBy(x, y);
 });
 
 /**
@@ -216,11 +209,9 @@ When('I scroll by {string}', async function (offset: string) {
  * When I scroll by '0, 100' in 'Overflow Container'
  */
 When('I scroll by {string} in {string}', async function (offset: string, alias: string) {
-    const coords = parseCoords(await getValue(offset));
     const element = await getElement(alias);
-    await element.evaluate(function (element, coords) {
-        element.scrollBy(...coords as [number, number]);
-    }, coords);
+    const [x, y] = parseCoords(await getValue(offset));
+    await t.scrollBy(element, x, y);
 });
 
 /**
@@ -232,39 +223,32 @@ When('I scroll by {string} in {string}', async function (offset: string, alias: 
 When('I upload {string} file to {string}', async function (value: string, alias: string) {
     const element = await getElement(alias);
     const filePath = await getValue(value);
-    await element.setInputFiles(filePath);
+    await t.setFilesToUpload(element, [filePath]).click(element);
 });
 
 /**
- * Accept alert
- * @example I accept alert
+ * Set alert handler
+ * @example I will accept alert
  */
-When('I accept alert', async function () {
-    await new Promise<void>((resolve)=> page.once('dialog', async (dialog) => {
-        await dialog.accept();
-        resolve();
-    }))
+When('I will accept alert', async function () {
+    await t.setNativeDialogHandler(() => true);
 });
 
 /**
  * Dismiss alert
  * Playwright automatically dismisses all dialogs. This step is just to make it implicitly.
- * @example I dismiss alert
+ * @example I will dismiss alert
  */
-When('I dismiss alert', async function () {
-    await new Promise<void>((resolve)=> page.once('dialog', async (dialog) => {
-        await dialog.dismiss();
-        resolve();
-    }));
+When('I will dismiss alert', async function () {
+    await t.setNativeDialogHandler(() => false);
 });
 
 /**
+ * Type text to prompt
  * I type {string} to alert
- * @example I type 'coffee' to alert
+ * @example I will type 'coffee' to alert
  */
-When('I type {string} to alert', async function (value: string) {
-    await new Promise<void>((resolve)=> page.once('dialog', async (dialog) => {
-        await dialog.accept(value);
-        resolve();
-    }))
+When('I will type {string} to alert', async function (valueKey: string) {
+    const value = await getValue(valueKey);
+    await t.setNativeDialogHandler(() => value, { dependencies: { value }});
 });

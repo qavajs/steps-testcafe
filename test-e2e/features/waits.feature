@@ -1,3 +1,4 @@
+@debug
 Feature: waits
 
   Background:
@@ -11,8 +12,9 @@ Feature: waits
       | Present Element | to be present     |
       | Detach Element  | not to be present |
       | Visible Element | to be visible     |
+      | Visible Element | not to be visible |
       | Hidden Element  | to be invisible   |
-      | Visible Element | to be in viewport |
+      | Hidden Element  | not to be visible |
 
   Scenario Outline: wait for text (<condition>)
     Then I wait until text of 'Loading' <condition> '<expectation>'

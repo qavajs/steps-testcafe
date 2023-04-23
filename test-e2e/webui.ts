@@ -29,7 +29,8 @@ const common = {
     publishQuiet: true,
     retry: 1,
     service: [localServer],
-    screenshot: ['onFail']
+    screenshot: ['onFail'],
+    defaultTimeout: 20000
 }
 
 export default common;

@@ -1,5 +1,6 @@
 import { When } from '@cucumber/cucumber';
-import { getValue, getElement, getValueWait, getConditionWait } from './transformers';
+import { getValue, getElement, getConditionWait, getValueWait } from './transformers';
+import {ClientFunction} from 'testcafe';
 
 /**
  * Wait for element condition
@@ -13,7 +14,7 @@ import { getValue, getElement, getValueWait, getConditionWait } from './transfor
  */
 When(
     'I wait until {string} {playwrightConditionWait}( ){playwrightTimeout}',
-        async function (alias: string, waitType: string, timeout: number | null) {
+    async function (alias: string, waitType: string, timeout: number | null) {
         const wait = getConditionWait(waitType);
         const element = await getElement(alias);
         await wait(element, timeout ? timeout : config.browser.timeout.page);
@@ -36,8 +37,11 @@ When(
         const wait = getValueWait(waitType);
         const element = await getElement(alias);
         const expectedValue = await getValue(value);
-        const getValueFn = async () => element.innerText();
-        await wait(getValueFn, expectedValue, timeout ? timeout : config.browser.timeout.page);
+        await wait(
+            element.with({ boundTestRun: t }).innerText,
+            expectedValue,
+            timeout ? timeout : config.browser.timeout.page
+        );
     }
 );
 
@@ -58,8 +62,11 @@ When(
         const wait = getValueWait(waitType);
         const collection = await getElement(alias);
         const expectedValue = await getValue(value);
-        const getValueFn = async () => collection.count();
-        await wait(getValueFn, expectedValue, timeout ? timeout : config.browser.timeout.page);
+        await wait(
+            collection.with({ boundTestRun: t }).count,
+            parseFloat(expectedValue),
+            timeout ? timeout : config.browser.timeout.page
+        );
     }
 );
 
@@ -80,10 +87,8 @@ When(
         const wait = getValueWait(waitType);
         const element = await getElement(alias);
         const expectedValue = await getValue(value);
-        const getValueFn = async () => element.evaluate(
-            (node: any, propertyName: string) => node[propertyName],
-            propertyName
-        );
+        // @ts-ignore
+        const getValueFn = element.with({ boundTestRun: t })[propertyName];
         await wait(getValueFn, expectedValue, timeout ? timeout : config.browser.timeout.page);
     }
 );
@@ -105,7 +110,7 @@ When(
         const wait = getValueWait(waitType);
         const element = await getElement(alias);
         const expectedValue = await getValue(value);
-        const getValueFn = async () => element.getAttribute(attributeName);
+        const getValueFn = element.with({ boundTestRun: t }).getAttribute(attributeName);
         await wait(getValueFn, expectedValue, timeout ? timeout : config.browser.timeout.page);
     }
 );
@@ -135,8 +140,9 @@ When(
     async function (waitType: string, value: string, timeout: number | null) {
         const wait = getValueWait(waitType);
         const expectedValue = await getValue(value);
-        const getValueFn = async () => page.url();
-        await wait(getValueFn, expectedValue, timeout ? timeout : config.browser.timeout.page);
+        const getValueFn = await ClientFunction(() => window.location.href )
+            .with({ boundTestRun: t });
+        await wait(getValueFn(), expectedValue, timeout ? timeout : config.browser.timeout.page);
     }
 );
 
@@ -154,7 +160,8 @@ When(
     async function (waitType: string, value: string, timeout: number | null) {
         const wait = getValueWait(waitType);
         const expectedValue = await getValue(value);
-        const getValueFn = async () => page.title();
-        await wait(getValueFn, expectedValue, timeout ? timeout : config.browser.timeout.page);
+        const getValueFn = await ClientFunction(() => window.document.title )
+            .with({ boundTestRun: t });
+        await wait(getValueFn(), expectedValue, timeout ? timeout : config.browser.timeout.page);
     }
 );

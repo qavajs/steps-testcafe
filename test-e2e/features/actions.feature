@@ -50,7 +50,7 @@ Feature: actions
   Scenario: switch to tab by index
     When I click 'New Tab Link'
     When I wait 1000 ms
-    When I switch to 2 window
+    When I switch to 'Frame' window
     Then I expect current url to be equal '$framePage'
     When I expect 'Frame Element' to be visible
 
@@ -114,24 +114,23 @@ Feature: actions
 
   Scenario: upload file
     When I upload '$uploadFile' file to 'File Input'
-    Then I expect text of 'Action' to be equal 'file:C:\fakepath\actions.html'
+    Then I expect 'value' property of 'File Input' to equal 'C:\fakepath\actions.html'
 
   Scenario: accept alert
-    When I click "Alert Button"
-    And I accept alert
+    And I will accept alert
+    When I click 'Alert Button'
+    And I wait 3000 ms
     Then I expect text of 'Action' to be equal 'true'
 
   Scenario: dismiss alert
-    When I click "Alert Button"
-    And I dismiss alert
+    And I will dismiss alert
+    When I click 'Alert Button'
+    And I wait 3000 ms
     Then I expect text of 'Action' to be equal 'false'
 
   Scenario: type text to alert
     When I expect text of 'Action' to be equal 'Nothing'
-    And I click "Prompt Button"
-    And I type 'I am not a robot' to alert
+    And I will type 'I am not a robot' to alert
+    And I click 'Prompt Button'
+    And I wait 3000 ms
     Then I expect text of 'Action' to be equal 'I am not a robot'
-
-  Scenario: expect text of alert
-    When I click "Prompt Button"
-    Then I expect text of alert to be equal 'Are you robot?'

@@ -1,32 +1,3 @@
-import { expect } from '@playwright/test';
-
-function toSimpleEqual(this: any, actual: any, expected: any) {
-    const pass = actual == expected;
-    if (pass) {
-        return {
-            message: () =>
-                `expected ${this.utils.printReceived(
-                    actual,
-                )} not to be equal ${this.utils.printExpected(
-                    expected,
-                )}`,
-            pass: true,
-        };
-    } else {
-        return {
-            message: () =>
-                `expected ${this.utils.printReceived(
-                    actual,
-                )} to be equal ${this.utils.printExpected(
-                    expected,
-                )}`,
-            pass: false,
-        };
-    }
-}
-
-expect.extend({ toSimpleEqual });
-
 function regexp(regexpLike: string | RegExp) {
     if (typeof regexpLike === 'string') {
         return new RegExp(regexpLike, 'gmi')
@@ -50,11 +21,26 @@ export const valueWaitExtractRegexp = new RegExp(`^${notClause}${toBeClause}${va
 export const valueWaitRegexp = new RegExp(`(${notClause}${toBeClause}${validationClause})`);
 
 const waits = {
-    [valueValidations.EQUAL]: async (poll: any, expected: any) => poll.toSimpleEqual(expected),
-    [valueValidations.CONTAIN]: async (poll: any, expected: any) => poll.toContain(expected),
-    [valueValidations.ABOVE]: async (poll: any, expected: any) => poll.toBeGreaterThan(parseInt(expected)),
-    [valueValidations.BELOW]: async (poll: any, expected: any) => poll.toBeLessThan(parseInt(expected)),
-    [valueValidations.MATCH]: async (poll: any, expected: any) => poll.toMatch(regexp(expected))
+    [valueValidations.EQUAL]: async (poll: Assertion, expected: any, reverse: boolean, timeout: number, message: string) =>
+        reverse
+            ? poll.notEql(expected, message, { timeout })
+            : poll.eql(expected, message, { timeout }),
+    [valueValidations.CONTAIN]: async (poll: Assertion, expected: any, reverse: boolean, timeout: number, message: string) =>
+        reverse
+            ? poll.notContains(expected, message, { timeout })
+            : poll.contains(expected, message, { timeout }),
+    [valueValidations.ABOVE]: async (poll: Assertion, expected: any, reverse: boolean, timeout: number, message: string) =>
+        reverse
+            ? poll.lte(parseFloat(expected), message, { timeout })
+            : poll.gt(parseFloat(expected), message, { timeout }),
+    [valueValidations.BELOW]: async (poll: Assertion, expected: any, reverse: boolean, timeout: number, message: string) =>
+        reverse
+            ? poll.gte(parseFloat(expected), message, { timeout })
+            : poll.lt(parseFloat(expected), message, { timeout }),
+    [valueValidations.MATCH]: async (poll: Assertion, expected: any, reverse: boolean, timeout: number, message: string) =>
+        reverse
+            ? poll.notMatch(regexp(expected), message, { timeout })
+            : poll.match(regexp(expected), message, { timeout })
 }
 
 /**
@@ -67,17 +53,14 @@ const waits = {
  * @return {Promise<void>}
  */
 export async function valueWait(
-    valueFn: Function,
+    valueFn: ClientFunction | Selector,
     expected: any,
     validationType: string,
     timeout: number = 10000,
     reverse: boolean
 ) {
     const message: string = `Value is${reverse ? '' : ' not'} ${validationType} ${expected}`;
-    const options = { timeout, message };
     const waitFn = waits[validationType];
-    const poll = reverse
-        ? expect.poll(() => valueFn(), options).not
-        : expect.poll(() => valueFn(), options);
-    await waitFn(poll, expected);
+    const poll: Assertion = t.expect(valueFn);
+    await waitFn(poll, expected, reverse, timeout, message);
 }

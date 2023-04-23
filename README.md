@@ -1,11 +1,11 @@
-[![npm version](https://badge.fury.io/js/@qavajs%2Fsteps-playwright.svg)](https://badge.fury.io/js/@qavajs%2Fsteps-playwright)
+[![npm version](https://badge.fury.io/js/@qavajs%2Fsteps-testcafe.svg)](https://badge.fury.io/js/@qavajs%2Fsteps-testcafe)
 
-# @qavajs/steps-playwright
-Step library to work with playwright in qavajs framework
+# @qavajs/steps-testcafe
+Step library to work with testcafe in qavajs framework
 
 ## Installation
 
-`npm install @qavajs/steps-playwright`
+`npm install @qavajs/steps-testcafe`
 
 ## Configuration
 ```javascript
@@ -13,7 +13,7 @@ const App = require('./page_object');
 module.exports = {
     default: {
         require: [
-            'node_modules/@qavajs/steps-playwright'
+            'node_modules/@qavajs/steps-testcafe'
         ],
         browser: {
             timeout: {
@@ -30,8 +30,8 @@ module.exports = {
 }
 ```
 
-## Connect to playwright server
-In order to connect to playwright server pass _wsEndpoint_ property in capabilities object
+## Connect to testcafe server
+In order to connect to testcafe server pass _wsEndpoint_ property in capabilities object
 ```typescript
 {
     capabilities: {
@@ -53,7 +53,7 @@ In order to connect to CDP endpoint pass _cdpEndpoint_ property in capabilities 
 ```
 
 ## Screenshot strategy
-@qavajs/steps-playwright has build-in capability to take screenshot on particular event. If you need to add 
+@qavajs/steps-testcafe has build-in capability to take screenshot on particular event. If you need to add 
 screenshot to your report add _screenshot_ property to profile config.
 Supported events:
 - onFail
@@ -68,8 +68,8 @@ module.exports = {
 }
 ```
 
-## Playwright traces
-@qavajs support capturing playwright traces. https://playwright.dev/docs/next/trace-viewer-intro
+## testcafe traces
+@qavajs support capturing testcafe traces. https://testcafe.dev/docs/next/trace-viewer-intro
 ```typescript
 {
     browser: {

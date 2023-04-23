@@ -1,7 +1,9 @@
 import { When } from '@cucumber/cucumber';
 import { getValue, getElement } from './transformers';
 import memory from '@qavajs/memory';
+import { ClientFunction } from 'testcafe';
 
+const resolveFunction = (fnDef: string | Function) => typeof fnDef === 'string' ? eval(`() => ${fnDef}`) : fnDef;
 /**
  * Execute client function
  * @param {string} functionKey - memory key of function
@@ -9,8 +11,9 @@ import memory from '@qavajs/memory';
  * @example I execute 'window.scrollBy(0, 100)' function
  */
 When('I execute {string} function', async function (functionKey) {
-    const fn = await getValue(functionKey);
-    await page.evaluate(fn);
+    const fnDef = await getValue(functionKey);
+    const clientFunction = ClientFunction(resolveFunction(fnDef));
+    await clientFunction.with({ boundTestRun: t })();
 });
 
 /**
@@ -21,8 +24,9 @@ When('I execute {string} function', async function (functionKey) {
  * @example I execute 'window.scrollY' function and save result as 'scroll'
  */
 When('I execute {string} function and save result as {string}', async function (functionKey, memoryKey) {
-    const fn = await getValue(functionKey);
-    memory.setValue(memoryKey, await page.evaluate(fn));
+    const fnDef = await getValue(functionKey);
+    const clientFunction = ClientFunction(resolveFunction(fnDef));
+    memory.setValue(memoryKey, await clientFunction.with({ boundTestRun: t })());
 });
 
 /**
@@ -30,15 +34,15 @@ When('I execute {string} function and save result as {string}', async function (
  * @param {string} functionKey - memory key of function
  * @param {string} alias - alias of target element
  * @example I execute '$fn' function on 'Component > Element' // fn is function reference
- * @example I execute 'arguments[0].scrollIntoView()' function on 'Component > Element'
+ * @example I execute 'target.scrollIntoView()' function on 'Component > Element'
  */
 When('I execute {string} function on {string}', async function (functionKey, alias) {
-    let fn = await getValue(functionKey);
+    const fnDef = await getValue(functionKey);
     const element = await getElement(alias);
-    if (typeof fn === 'string') {
-        fn = new Function('return ' + fn)
-    }
-    await element.evaluate(fn);
+    const clientFunction = ClientFunction(resolveFunction(fnDef), {
+        dependencies: { target: element }
+    });
+    await clientFunction.with({ boundTestRun: t })();
 });
 
 /**
@@ -46,16 +50,16 @@ When('I execute {string} function on {string}', async function (functionKey, ali
  * @param {string} functionKey - memory key of function
  * @param {string} alias - alias of target element
  * @example I execute '$fn' function on 'Component > Element' and save result as 'innerText' // fn is function reference
- * @example I execute 'arguments[0].innerText' function on 'Component > Element' and save result as 'innerText'
+ * @example I execute 'target.innerText' function on 'Component > Element' and save result as 'innerText'
  */
 When(
     'I execute {string} function on {string} and save result as {string}',
     async function (functionKey, alias, memoryKey) {
-        let fn = await getValue(functionKey);
-        if (typeof fn === 'string') {
-            fn = new Function('return ' + fn)
-        }
+        const fnDef = await getValue(functionKey);
         const element = await getElement(alias);
-        memory.setValue(memoryKey, await element.evaluate(fn));
+        const clientFunction = ClientFunction(resolveFunction(fnDef), {
+            dependencies: { target: element }
+        });
+        memory.setValue(memoryKey, await clientFunction.with({ boundTestRun: t })());
     }
 );

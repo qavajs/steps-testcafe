@@ -1,6 +1,4 @@
-import { Locator } from 'playwright';
-import { expect } from '@playwright/test';
-import {throwTimeoutError} from './utils/utils';
+import { Selector } from 'testcafe';
 
 export const conditionValidations = {
     PRESENT: 'present',
@@ -19,45 +17,51 @@ const validationClause = `(${Object.values(conditionValidations).join('|')})`;
 export const conditionWaitExtractRegexp = new RegExp(`^${notClause}${toBeClause}${validationClause}$`);
 export const conditionWaitRegexp = new RegExp(`(${notClause}${toBeClause}${validationClause})`);
 
+const executeWait = (expect: Assertion<any>, reverse: boolean, timeout: number, timeoutMsg: string) => {
+    return reverse
+        ? expect.eql(0, timeoutMsg, { timeout })
+        : expect.gt(0, timeoutMsg, { timeout });
+}
+
 const waits = {
     [conditionValidations.PRESENT]: (
-        element: Locator,
+        element: Selector,
         reverse: boolean,
         timeout: number,
         timeoutMsg: string
-    ) => element.waitFor({state: reverse ? 'detached' : 'attached', timeout}),
+    ) => {
+        const expect = t.expect(element.with({ boundTestRun: t }).count);
+        return executeWait(expect, reverse, timeout, timeoutMsg);
+    },
     [conditionValidations.VISIBLE]: (
-        element: Locator,
+        element: Selector,
         reverse: boolean,
         timeout: number,
         timeoutMsg: string
-    ) => element.waitFor({state: reverse ? 'hidden' : 'visible', timeout}),
+    ) => {
+        const expect = t.expect(element.filterVisible().with({ boundTestRun: t }).count)
+        return executeWait(expect, reverse, timeout, timeoutMsg);
+    },
     [conditionValidations.INVISIBLE]: (
-        element: Locator,
+        element: Selector,
         reverse: boolean,
         timeout: number,
         timeoutMsg: string
-    ) => element.waitFor({state: reverse ? 'visible' : 'hidden', timeout}),
-    [conditionValidations.IN_VIEWPORT]: (
-        element: Locator,
-        reverse: boolean,
-        timeout: number,
-        timeoutMsg: string
-    ) => throwTimeoutError(() => expect(async () => {
-        const e = reverse ? expect(element).not : expect(element);
-        await e.toBeInViewport();
-    }).toPass({ timeout }), timeoutMsg)
+    ) => {
+        const expect = t.expect(element.filterHidden().with({ boundTestRun: t }).count)
+        return executeWait(expect, reverse, timeout, timeoutMsg);
+    },
 }
 /**
  * Wait for condition
- * @param {Locator} element - element
+ * @param {Selector} element - element
  * @param {string} validationType - validation to perform
  * @param {number} [timeout] - timeout to wait
  * @param {boolean} [reverse] - negate flag
  * @return {Promise<void>}
  */
 export async function conditionWait(
-    element: Locator,
+    element: Selector,
     validationType: string,
     timeout: number = 10000,
     reverse: boolean = false
