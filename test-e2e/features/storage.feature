@@ -3,9 +3,10 @@ Feature: storage
   Background:
     When I open 'http://localhost:3000/storage.html' url
 
-  Scenario: get cookie
-    When I save value of 'fooCookie' cookie as 'cookie'
-    And I expect '$cookie.value' memory value to be equal 'barCookie'
+#  TODO Known issue, will be fixed with experimental native automation
+#  Scenario: get cookie
+#    When I save value of 'fooCookie' cookie as 'cookie'
+#    And I expect '$cookie.value' memory value to be equal 'barCookie'
 
   Scenario Outline: get <storage> storage
     When I save value of '<name>' <storage> storage as 'storageValue'

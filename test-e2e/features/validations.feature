@@ -47,8 +47,8 @@ Feature: validations
     Then I expect 'id' attribute of every element in 'Simple Text List Items' collection not to contain 'fourth'
 
   Scenario: collection property of elements
-    Then I expect 'nodeName' property of every element in 'Simple Text List Items' collection to equal 'LI'
-    Then I expect 'nodeName' property of every element in 'Simple Text List Items' collection not to contain 'A'
+    Then I expect 'tagName' property of every element in 'Simple Text List Items' collection to equal 'li'
+    Then I expect 'tagName' property of every element in 'Simple Text List Items' collection not to contain 'a'
 
   Scenario: element css property
     Then I expect 'background-color' css property of 'Simple Text Input' to be equal 'rgb(95, 158, 160)'
