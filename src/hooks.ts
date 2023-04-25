@@ -19,8 +19,7 @@ Before(async function () {
         ...driverConfig.timeout
     }
     config.driverConfig = driverConfig;
-    const cucumberWorker: number = (process.env.CUCUMBER_WORKER_ID ?? 1) as number;
-    global.testcafe = await createTestCafe('localhost', 31337 + cucumberWorker * 10, 31338 + cucumberWorker * 10);
+    global.testcafe = await createTestCafe('localhost');
     global.runner = await testcafe.createRunner();
     global.taskPromise = runner
         .src('./src/testController/bootstrap.ts')

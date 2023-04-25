@@ -22,32 +22,10 @@ module.exports = {
                 page: 10000
             },
             capabilities: {
-                browserName: 'chromium'
+                browser: 'chrome'
             }
         },
         pageObject: new App()
-    }
-}
-```
-
-## Connect to testcafe server
-In order to connect to testcafe server pass _wsEndpoint_ property in capabilities object
-```typescript
-{
-    capabilities: {
-        browserName: 'chromium',
-        wsEndpoint: 'ws://127.0.0.1:60291/2bd48ce272de2b543e4c8c533f664b83'    
-    }
-}
-```
-
-## Connect to cdp endpoint
-In order to connect to CDP endpoint pass _cdpEndpoint_ property in capabilities object 
-```typescript
-{
-    capabilities: {
-        browserName: 'chromium',
-        cdpEndpoint: 'http://localhost:9222/'    
     }
 }
 ```
@@ -68,16 +46,6 @@ module.exports = {
 }
 ```
 
-## testcafe traces
-@qavajs support capturing testcafe traces. https://testcafe.dev/docs/next/trace-viewer-intro
-```typescript
-{
-    browser: {
-        trace: {
-            event: ['onFail'], // Events to save trace. Possible value onFail or AfterScenario 
-            dir: 'dirToStoreTraces', // Dir to store traces. Default is traces/
-            attach: true // Define if trace need to be attached to cucumber report. Default false
-        }
-    }
-}
-```
+## Limitations
+- I save value of '<cookieName>' cookie as 'cookie' is not working in hammerhead proxy mode
+

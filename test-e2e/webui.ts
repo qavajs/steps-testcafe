@@ -21,7 +21,7 @@ const common = {
     ],
     memory: new Memory(),
     pageObject: new App(),
-    parallel: 1,
+    parallel: 4,
     publishQuiet: true,
     retry: 1,
     service: [localServer],
