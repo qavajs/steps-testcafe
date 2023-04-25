@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import { Response } from '@playwright/test';
+
 const file = (path: string) => `file://${path}`
 
 export default class Memory {
@@ -36,6 +36,6 @@ export default class Memory {
 
     button2 = 'Button2';
 
-    userInterceptionPredicate = (response: Response) => response.url().includes('users');
+    userInterceptionPredicate = (request: any) => request.url.includes('users');
 }
 

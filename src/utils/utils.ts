@@ -1,7 +1,8 @@
-import {ScreenshotEvent} from './screenshotEvent';
-import {TraceEvent} from './traceEvent';
-import {Status, ITestStepHookParameter, ITestCaseHookParameter} from '@cucumber/cucumber';
-import {join} from 'path';
+import { ScreenshotEvent } from './screenshotEvent';
+import { TraceEvent } from './traceEvent';
+import { Status, ITestStepHookParameter, ITestCaseHookParameter } from '@cucumber/cucumber';
+import { join } from 'path';
+import { readFile } from 'fs/promises';
 
 export function saveScreenshotAfterStep(config: any, step: ITestStepHookParameter): boolean {
     const isAfterStepScreenshot = equalOrIncludes(config.screenshot, ScreenshotEvent.AFTER_STEP);
@@ -55,5 +56,14 @@ export async function throwTimeoutError(fn: Function, message: string) {
         }
         throw err
     }
+}
 
+export async function takeScreenshot(): Promise<string> {
+    const screenshotPath = await t.takeScreenshot();
+    const screenshot = await readFile(screenshotPath);
+    return screenshot.toString('base64');
+}
+
+export function isChromium(browserName: string): boolean {
+   return browserName.includes('chrom')
 }

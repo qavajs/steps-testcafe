@@ -11,7 +11,7 @@ import { ClientFunction } from 'testcafe';
  * @example I expect 'Loading' not to be present
  * @example I expect 'Search Bar > Submit Button' to be clickable
  */
-Then('I expect {string} {playwrightConditionWait}', async function (alias: string, condition: string) {
+Then('I expect {string} {testcafeConditionWait}', async function (alias: string, condition: string) {
     const element = await getElement(alias);
     const wait = getConditionWait(condition);
     await wait(element, config.browser.timeout.page);
@@ -26,7 +26,7 @@ Then('I expect {string} {playwrightConditionWait}', async function (alias: strin
  * @example I expect text of '#2 of Search Results' does not contain 'yandex'
  */
 Then(
-    'I expect text of {string} {playwrightValidation} {string}',
+    'I expect text of {string} {testcafeValidation} {string}',
     async function (alias: string, validationType: string, value: any) {
         const expectedValue = await getValue(value);
         const element = await getElement(alias);
@@ -48,7 +48,7 @@ Then(
  * @example I expect 'innerHTML' property of 'Label' to contain '<b>'
  */
 Then(
-    'I expect {string} property of {string} {playwrightValidation} {string}',
+    'I expect {string} property of {string} {testcafeValidation} {string}',
     async function (property: string, alias: string, validationType: string, value: string) {
         const propertyName = await getValue(property);
         const expectedValue = await getValue(value);
@@ -71,7 +71,7 @@ Then(
  * @example I expect 'href' attribute of 'Home Link' to contain '/home'
  */
 Then(
-    'I expect {string} attribute of {string} {playwrightValidation} {string}',
+    'I expect {string} attribute of {string} {testcafeValidation} {string}',
     async function (attribute: string, alias: string, validationType: string, value: string) {
         const attributeName = await getValue(attribute);
         const expectedValue = await getValue(value);
@@ -92,7 +92,7 @@ Then(
  * @example I expect current url equals 'https://wikipedia.org'
  */
 Then(
-    'I expect current url {playwrightValidation} {string}',
+    'I expect current url {testcafeValidation} {string}',
     async function (validationType: string, expected: string) {
         const validation = getValidation(validationType);
         const expectedUrl = await getValue(expected);
@@ -114,7 +114,7 @@ Then(
  * @example I expect number of elements in 'Search Results' collection to be below '51'
  */
 Then(
-    'I expect number of elements in {string} collection {playwrightValidation} {string}',
+    'I expect number of elements in {string} collection {testcafeValidation} {string}',
     async function (alias: string, validationType: string, value: string) {
         const expectedValue = await getValue(value);
         const collection = await getElement(alias);
@@ -133,7 +133,7 @@ Then(
  * @example I expect page title equals 'Wikipedia'
  */
 Then(
-    'I expect page title {playwrightValidation} {string}',
+    'I expect page title {testcafeValidation} {string}',
     async function (validationType: string, expected: string) {
         const validation = getValidation(validationType);
         const expectedTitle = await getValue(expected);
@@ -154,7 +154,7 @@ Then(
  * @example I expect text of every element in 'Search Results' collection does not contain 'yandex'
  */
 Then(
-    'I expect text of every element in {string} collection {playwrightValidation} {string}',
+    'I expect text of every element in {string} collection {testcafeValidation} {string}',
     async function (alias: string, validationType: string, value: string) {
         const expectedValue = await getValue(value);
         const collection = await getElement(alias);
@@ -175,7 +175,7 @@ Then(
  * @example I expect 'href' attribute of every element in 'Search Results' collection to contain 'google'
  */
 Then(
-    'I expect {string} attribute of every element in {string} collection {playwrightValidation} {string}',
+    'I expect {string} attribute of every element in {string} collection {testcafeValidation} {string}',
     async function (attributeKey: string, alias: string, validationType: string, value: string) {
         const attribute = await getValue(attributeKey);
         const expectedValue = await getValue(value);
@@ -197,7 +197,7 @@ Then(
  * @example I expect 'href' property of every element in 'Search Results' collection to contain 'google'
  */
 Then(
-    'I expect {string} property of every element in {string} collection {playwrightValidation} {string}',
+    'I expect {string} property of every element in {string} collection {testcafeValidation} {string}',
     async function (propertyKey: string, alias: string, validationType: string, value: string) {
         const property = await getValue(propertyKey);
         const expectedValue = await getValue(value);
@@ -223,7 +223,7 @@ Then(
  * @example I expect 'font-family' css property of 'Label' to contain 'Fira'
  */
 Then(
-    'I expect {string} css property of {string} {playwrightValidation} {string}',
+    'I expect {string} css property of {string} {testcafeValidation} {string}',
     async function (property: string, alias: string, validationType: string, value: string) {
         const propertyName = await getValue(property);
         const expectedValue = await getValue(value);
@@ -245,7 +245,7 @@ Then(
 //  * @param {string} value - expected text value
 //  * @example I expect text of alert does not contain 'coffee'
 //  */
-// Then('I expect text of alert {playwrightValidation} {string}', async function (validationType: string, expectedValue: string) {
+// Then('I expect text of alert {testcafeValidation} {string}', async function (validationType: string, expectedValue: string) {
 //         const alertText = await new Promise<string>(resolve => page.once('dialog', async (dialog) => {
 //             resolve(dialog.message());
 //         }));

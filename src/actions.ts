@@ -160,7 +160,9 @@ When('I hover over {string}', async function (alias: string) {
 When('I select {string} option from {string} dropdown', async function (option: string, alias: string) {
     const optionValue = await getValue(option);
     const select = await getElement(alias);
-    await t.click(select.find('option').withText(optionValue));
+    await t
+        .click(select)
+        .click(select.find('option').withText(optionValue));
 });
 
 /**
@@ -171,7 +173,9 @@ When('I select {string} option from {string} dropdown', async function (option: 
  */
 When('I select {int}(st|nd|rd|th) option from {string} dropdown', async function (optionIndex: number, alias: string) {
     const select = await getElement(alias);
-    await t.click(select.find('option').nth(optionIndex - 1));
+    await t
+        .click(select)
+        .click(select.find('option').nth(optionIndex - 1));
 });
 
 /**
@@ -236,7 +240,7 @@ When('I will accept alert', async function () {
 
 /**
  * Dismiss alert
- * Playwright automatically dismisses all dialogs. This step is just to make it implicitly.
+ * testcafe automatically dismisses all dialogs. This step is just to make it implicitly.
  * @example I will dismiss alert
  */
 When('I will dismiss alert', async function () {

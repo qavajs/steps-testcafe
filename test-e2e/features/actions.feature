@@ -47,7 +47,7 @@ Feature: actions
     When I expect 'Button' to be visible
     When I expect 'Frame Element' not to be visible
 
-  Scenario: switch to tab by index
+  Scenario: switch to tab by title
     When I click 'New Tab Link'
     When I wait 1000 ms
     When I switch to 'Frame' window
@@ -69,20 +69,21 @@ Feature: actions
     Then I expect text of 'Key Dump' to contain '"keyCode":65'
     Then I expect text of 'Key Dump' to contain '"altKey":true'
 
-  Scenario Outline: press <Key> key multiple times
-    When I press '<Key>' key <Times> time<Postfix>
-    Then I expect text of 'Press Counter' to be equal '<Result>'
+  Scenario Outline: press <key> key multiple times
+    When I press '<key>' key <times> time<postfix>
+    Then I expect text of 'Press Counter' to contain '<result>'
+    Then I expect text of 'Key Dump' to contain '"keyCode":<keycode>'
 
     Examples:
-      | Key   | Times | Postfix | Result                |
-      | Enter | 1     |         | pressed Enter 1 times |
-      | Space | 5     | s       | pressed Space 5 times |
+      | key   | times | postfix | result  | keycode |
+      | Enter | 1     |         | 1 times | 13      |
+      | Space | 5     | s       | 5 times | 32      |
 
   Scenario: hover
     When I hover over 'Button Hover'
     Then I expect text of 'Action' to be equal 'hover'
 
-  Scenario: select input by text
+  Scenario: select option by text
     When I select 'two' option from 'Select' dropdown
     Then I expect text of 'Action' to be equal 'select two'
 

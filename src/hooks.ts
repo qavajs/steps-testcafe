@@ -1,10 +1,7 @@
-import {After, AfterStep, Before, BeforeStep} from '@cucumber/cucumber';
+import { After, AfterStep, Before, BeforeStep } from '@cucumber/cucumber';
 import defaultTimeouts from './defaultTimeouts';
-import {Browser, BrowserContext, Page} from 'playwright';
-import {po} from '@qavajs/po-testcafe';
-import {driverProvider} from './driverProvider';
-import {saveScreenshotAfterStep, saveScreenshotBeforeStep} from './utils/utils';
-import {readFile} from 'fs/promises';
+import { po } from '@qavajs/po-testcafe';
+import {isChromium, saveScreenshotAfterStep, saveScreenshotBeforeStep, takeScreenshot} from './utils/utils';
 import createTestCafe from 'testcafe';
 
 declare global {
@@ -25,11 +22,12 @@ Before(async function () {
     const cucumberWorker: number = (process.env.CUCUMBER_WORKER_ID ?? 1) as number;
     global.testcafe = await createTestCafe('localhost', 31337 + cucumberWorker * 10, 31338 + cucumberWorker * 10);
     global.runner = await testcafe.createRunner();
-
     global.taskPromise = runner
         .src('./src/testController/bootstrap.ts')
-        .browsers(['chrome'])
-        .run();
+        .browsers([config.driverConfig.capabilities.browser])
+        .run({
+            nativeAutomation: config.driverConfig.capabilities.nativeAutomation ?? false
+        });
     await new Promise((resolve) => {
         const interval = setInterval(() => {
             if (global.t) {
@@ -43,25 +41,25 @@ Before(async function () {
     this.log(`browser instance started:\n${JSON.stringify(config.driverConfig, null, 2)}`);
 });
 
-// BeforeStep(async function () {
-//     if (saveScreenshotBeforeStep(config)) {
-//         try {
-//             this.attach(await page.screenshot(), 'image/png');
-//         } catch (err) {
-//             console.warn(err)
-//         }
-//     }
-// });
+BeforeStep(async function () {
+    if (saveScreenshotBeforeStep(config)) {
+        try {
+            this.attach(await takeScreenshot(), 'image/png');
+        } catch (err) {
+            console.warn(err)
+        }
+    }
+});
 
-// AfterStep(async function (step) {
-//     try {
-//         if (saveScreenshotAfterStep(config, step)) {
-//             this.attach(await page.screenshot(), 'image/png');
-//         }
-//     } catch (err) {
-//         console.warn(err)
-//     }
-// });
+AfterStep(async function (step) {
+    try {
+        if (saveScreenshotAfterStep(config, step)) {
+            this.attach(await takeScreenshot(), 'image/png');
+        }
+    } catch (err) {
+        console.warn(err)
+    }
+});
 
 After(async function (scenario) {
     if (global.t) {
@@ -71,5 +69,4 @@ After(async function (scenario) {
         // @ts-ignore
         global.t = null;
     }
-
 });

@@ -1,8 +1,7 @@
-import { Then, When } from '@cucumber/cucumber';
+import { Then } from '@cucumber/cucumber';
 import memory from '@qavajs/memory';
-import { Browser, BrowserContext, Page } from 'playwright';
 import { expect } from 'chai';
-import createTestCafe from 'testcafe';
+import * as testcafe from 'testcafe';
 
 declare global {
     var t: TestController;

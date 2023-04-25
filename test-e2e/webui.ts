@@ -11,21 +11,17 @@ const common = {
             page: 5000
         },
         capabilities: {
-            browserName: 'chromium'
-        },
-        trace: {
-            event: ['onFail'],
-            dir: 'dirToStoreTraces',
-            attach: true
+            browser: 'chrome:headless'
         }
     },
     format: [
         '@qavajs/console-formatter',
+        '@qavajs/html-formatter:test-e2e/report.html',
         '@qavajs/xunit-formatter:test-e2e/report.xml'
     ],
     memory: new Memory(),
     pageObject: new App(),
-    parallel: 4,
+    parallel: 1,
     publishQuiet: true,
     retry: 1,
     service: [localServer],
@@ -45,13 +41,7 @@ export const debug = {
             page: 5000
         },
         capabilities: {
-            browserName: 'chromium',
-            headless: false
-        },
-        trace: {
-            event: 'onFail',
-            dir: 'customDir',
-            attach: true
+            browser: 'chrome'
         }
     }
 }
