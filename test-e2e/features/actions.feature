@@ -6,7 +6,7 @@ Feature: actions
   Scenario: click
     When I click 'Button'
     Then I expect text of 'Action' to be equal 'click'
-
+  @debug
   Scenario: force click
     When I force click 'Button'
     Then I expect text of 'Action' to be equal 'click'

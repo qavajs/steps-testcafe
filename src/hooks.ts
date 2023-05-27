@@ -1,4 +1,4 @@
-import { After, AfterStep, Before, BeforeStep } from '@cucumber/cucumber';
+import { After, AfterStep, AfterAll, Before, BeforeStep, BeforeAll } from '@cucumber/cucumber';
 import defaultTimeouts from './defaultTimeouts';
 import { po } from '@qavajs/po-testcafe';
 import { saveScreenshotAfterStep, saveScreenshotBeforeStep, takeScreenshot } from './utils/utils';
@@ -13,29 +13,35 @@ declare global {
     var config: any;
 }
 
+BeforeAll(async function (){
+    global.testcafe = await createTestCafe('localhost');
+})
+
 Before(async function () {
     const driverConfig = config.browser ?? config.driver;
     driverConfig.timeout = {
         ...defaultTimeouts,
         ...driverConfig.timeout
     }
-    config.driverConfig = driverConfig;
-    global.testcafe = await createTestCafe('localhost');
-    global.runner = await testcafe.createRunner();
-    global.taskPromise = runner
-        .src(join(__dirname, '/testController/bootstrap.js'))
-        .browsers([config.driverConfig.capabilities.browser])
-        .run({
-            nativeAutomation: config.driverConfig.capabilities.nativeAutomation ?? false
+    global.config.driverConfig = driverConfig;
+
+    if (!global.t || !config.driverConfig.reuseSession) {
+        global.runner = await testcafe.createRunner();
+        global.taskPromise = global.runner
+            .src(join(__dirname, '/testController/bootstrap.js'))
+            .browsers([config.driverConfig.capabilities.browserName])
+            .run({
+                nativeAutomation: config.driverConfig.capabilities.nativeAutomation ?? false
+            });
+        await new Promise((resolve) => {
+            const interval = setInterval(() => {
+                if (global.t) {
+                    clearInterval(interval)
+                    resolve(t);
+                }
+            }, 500)
         });
-    await new Promise((resolve) => {
-        const interval = setInterval(() => {
-            if (global.t) {
-                clearInterval(interval)
-                resolve(t);
-            }
-        }, 500)
-    })
+    }
     po.init({timeout: config.driverConfig.timeout.present});
     po.register(config.pageObject);
     this.log(`browser instance started:\n${JSON.stringify(config.driverConfig, null, 2)}`);
@@ -62,10 +68,9 @@ AfterStep(async function (step) {
 });
 
 After(async function (scenario) {
-    if (global.t) {
+    if (global.t && !global.config.driverConfig.reuseSession) {
         await global.taskPromise.cancel();
         await global.runner.stop();
-        await global.testcafe.close();
         // @ts-ignore
         global.t = null;
         // @ts-ignore
@@ -74,3 +79,9 @@ After(async function (scenario) {
         global.taskPromise = null;
     }
 });
+
+AfterAll(async function () {
+    await global.testcafe.close();
+});
+
+
