@@ -8,3 +8,4 @@ require('./lib/execute.js');
 require('./lib/intercept.js');
 require('./lib/cookies.js');
 require('./lib/localSessionStorage.js');
+require('./lib/mock.js');

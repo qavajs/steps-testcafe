@@ -1,8 +1,9 @@
 import { After, AfterStep, Before, BeforeStep } from '@cucumber/cucumber';
 import defaultTimeouts from './defaultTimeouts';
 import { po } from '@qavajs/po-testcafe';
-import {isChromium, saveScreenshotAfterStep, saveScreenshotBeforeStep, takeScreenshot} from './utils/utils';
+import { saveScreenshotAfterStep, saveScreenshotBeforeStep, takeScreenshot } from './utils/utils';
 import createTestCafe from 'testcafe';
+import { join } from 'path';
 
 declare global {
     var t: TestController;
@@ -15,14 +16,14 @@ declare global {
 Before(async function () {
     const driverConfig = config.browser ?? config.driver;
     driverConfig.timeout = {
-        defaultTimeouts,
+        ...defaultTimeouts,
         ...driverConfig.timeout
     }
     config.driverConfig = driverConfig;
     global.testcafe = await createTestCafe('localhost');
     global.runner = await testcafe.createRunner();
     global.taskPromise = runner
-        .src('./src/testController/bootstrap.ts')
+        .src(join(__dirname, '/testController/bootstrap.js'))
         .browsers([config.driverConfig.capabilities.browser])
         .run({
             nativeAutomation: config.driverConfig.capabilities.nativeAutomation ?? false
@@ -67,5 +68,9 @@ After(async function (scenario) {
         await global.testcafe.close();
         // @ts-ignore
         global.t = null;
+        // @ts-ignore
+        global.runner = null;
+        // @ts-ignore
+        global.taskPromise = null;
     }
 });
