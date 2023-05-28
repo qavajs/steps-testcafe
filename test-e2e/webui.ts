@@ -13,6 +13,7 @@ const common = {
         capabilities: {
             browserName: 'chrome:headless'
         },
+        reuseSession: true
     },
     format: [
         '@qavajs/console-formatter',
@@ -21,7 +22,7 @@ const common = {
     ],
     memory: new Memory(),
     pageObject: new App(),
-    parallel: 1,
+    parallel: 3,
     publishQuiet: true,
     retry: 1,
     service: [localServer],
@@ -44,5 +45,6 @@ export const debug = {
             browserName: 'chrome'
         },
         reuseSession: true
-    }
+    },
+    parallel: 1
 }

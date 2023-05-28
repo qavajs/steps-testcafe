@@ -68,6 +68,16 @@ AfterStep(async function (step) {
 });
 
 After(async function (scenario) {
+    if (global.config.driverConfig.reuseSession) {
+        let close = true;
+        while (close) {
+            try {
+                await t.closeWindow();
+            } catch (err) {
+                close = false
+            }
+        }
+    }
     if (global.t && !global.config.driverConfig.reuseSession) {
         await global.taskPromise.cancel();
         await global.runner.stop();

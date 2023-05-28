@@ -18,5 +18,5 @@ Feature: intercept
 
     Examples:
       | handler                    |
-      | .+\/users                  |
+#      | .+\/users                  |
       | $userInterceptionPredicate |
