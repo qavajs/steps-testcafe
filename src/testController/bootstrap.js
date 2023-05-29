@@ -1,3 +1,3 @@
-import testController from './testController';
+const testController = require('./testController');
 fixture`qavajs`;
 test('testcafe', testController.setup);
