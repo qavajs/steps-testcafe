@@ -1,6 +1,6 @@
 {
   "name": "@qavajs/steps-testcafe",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "steps to interact with testcafe",
   "main": "./index.js",
   "scripts": {

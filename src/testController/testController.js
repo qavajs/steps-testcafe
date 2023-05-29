@@ -8,4 +8,4 @@ const testController = {
         return testController.testController;
     }
 };
-export default testController;
+module.exports = testController;
