@@ -1,6 +1,6 @@
 const testController = {
     testController: null,
-    setup: function(t: TestController) {
+    setup: function(t) {
         global.t = t;
         return new Promise(() => {});
     },
