@@ -1,6 +1,6 @@
 const testController = {
     testController: null,
-    setup: function(t) {
+    setup: function(t: TestController) {
         global.t = t;
         return new Promise(() => {});
     },
@@ -8,4 +8,5 @@ const testController = {
         return testController.testController;
     }
 };
-module.exports = testController;
+
+export default testController;
