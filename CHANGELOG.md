@@ -4,6 +4,9 @@ All notable changes to the "@qavajs/steps-testcafe" will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.1.2]
+- :beetle: fixed bootstrap path
+
 ## [0.1.1]
 - :beetle: fixed test controller holder
 

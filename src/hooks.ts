@@ -28,7 +28,7 @@ Before(async function () {
     if (!global.t || !config.driverConfig.reuseSession) {
         global.runner = await testcafe.createRunner();
         global.taskPromise = global.runner
-            .src(join(__dirname, '/testController/bootstrap.js'))
+            .src(join(__dirname, 'testController/bootstrap.{ts,js}'))
             .browsers([config.driverConfig.capabilities.browserName])
             .run({
                 nativeAutomation: config.driverConfig.capabilities.nativeAutomation ?? false
