@@ -4,6 +4,9 @@ All notable changes to the "@qavajs/steps-testcafe" will be documented in this f
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.0]
+- :rocket: added steps to dynamically define page objects
+
 ## [0.1.2]
 - :beetle: fixed bootstrap path
 
