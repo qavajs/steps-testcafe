@@ -13,7 +13,7 @@ const App = require('./page_object');
 module.exports = {
     default: {
         require: [
-            'node_modules/@qavajs/steps-testcafe'
+            'node_modules/@qavajs/steps-testcafe/index.js'
         ],
         browser: {
             timeout: {
