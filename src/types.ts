@@ -27,3 +27,11 @@ defineParameterType({
     transformer: p => p ? parseInt(p) : null,
     useForSnippets: false
 });
+
+defineParameterType({
+    name: 'testcafePoType',
+    regexp: /(element|collection)/,
+    transformer: p => p,
+    useForSnippets: false
+});
+
